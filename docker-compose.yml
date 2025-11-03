@@ -1,0 +1,6 @@
+services:
+  notebook:
+    image: mcr.microsoft.com/devcontainers/python:3.12
+    command: sleep infinity
+    volumes:
+      - .:/workspaces/customer-risk-prediction:cached

@@ -1,0 +1,29 @@
+{
+  "name": "Customer Risk Prediction: Notebook",
+  "dockerComposeFile": [
+    "../../docker-compose.yml"
+  ],
+  "service": "notebook",
+  "workspaceFolder": "/workspaces/customer-risk-prediction",
+  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && uv venv --system-site-packages && uv sync",
+  "containerEnv": {
+    "PYTHONPATH": "/workspaces/customer-risk-prediction",
+    "UV_LINK_MODE": "copy",
+    "UV_VENV_CLEAR": 1
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": ".venv/bin/python"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "streetsidesoftware.code-spell-checker",
+        "mechatroner.rainbow-csv",
+        "shardulm94.trailing-spaces"
+      ]
+    }
+  }
+}
