@@ -1,0 +1,9 @@
+{
+  "reason": "Identifiers and PII - not predictive features",
+  "columns": [
+    "id",
+    "ssn",
+    "name",
+    "customer_id"
+  ]
+}

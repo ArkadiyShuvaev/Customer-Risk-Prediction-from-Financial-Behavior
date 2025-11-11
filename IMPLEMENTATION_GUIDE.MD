@@ -79,13 +79,13 @@ credit-scoring-ml-project/
 ### **Two Types of Splits (They Serve Different Purposes):**
 
 #### **1. Hold-Out Test Set (Final Evaluation)**
-**Purpose:** Simulate completely unseen production data  
-**When:** Set aside at the very beginning, NEVER touch until final evaluation  
+**Purpose:** Simulate completely unseen production data
+**When:** Set aside at the very beginning, NEVER touch until final evaluation
 **Size:** 15-20% of total data
 
 #### **2. K-Fold Cross-Validation (Model Development)**
-**Purpose:** Evaluate model performance during development, tune hyperparameters  
-**When:** During model training and hyperparameter tuning  
+**Purpose:** Evaluate model performance during development, tune hyperparameters
+**When:** During model training and hyperparameter tuning
 **Applied to:** The training set only (NOT the hold-out test set)
 
 ---
@@ -118,10 +118,10 @@ Original Dataset (100%)
 ### **Detailed Steps:**
 
 #### **Section 1: Setup & Data Loading**
-1. ✅ Import necessary libraries (pandas, numpy, matplotlib, seaborn, sklearn)
-2. ✅ Set display options and random seed for reproducibility
-3. ✅ Load raw data from `data/raw/credit_score_truncated_raw.csv`
-4. ✅ Display first few rows and basic information
+1. Import necessary libraries (pandas, numpy, matplotlib, seaborn, sklearn)
+2. Set display options and random seed for reproducibility
+3. Load raw data from `data/raw/credit_score_truncated_raw.csv`
+4. Display first few rows and basic information
 
 ---
 
@@ -141,7 +141,7 @@ y = df['Credit_Score']
 
 # Create hold-out test set (20%)
 X_train_full, X_test_holdout, y_train_full, y_test_holdout = train_test_split(
-    X, y, 
+    X, y,
     test_size=0.20,
     stratify=y,
     random_state=42
@@ -209,7 +209,50 @@ Based on patterns observed:
 - **MAR (Missing at Random):** Missingness related to other observed variables
 - **MNAR (Missing Not at Random):** Missingness related to the value itself
 
-**4.4 Document Column-by-Column Strategy** ⭐ **DECISIONS MADE HERE**
+---
+
+#### **Section 5: Outlier Detection & Treatment** (on train_full ONLY)
+
+**5.1 Identify Outliers Using Boxplots**
+```python
+# Numerical columns for outlier analysis
+numerical_cols = ['age', 'num_bank_accounts', 'num_credit_card', 
+                  'interest_rate', 'num_of_loan', 'delay_from_due_date',
+                  'num_of_delayed_payment', 'annual_income']
+
+# Create boxplots
+fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+for idx, col in enumerate(numerical_cols):
+    ax = axes[idx // 4, idx % 4]
+    train.boxplot(column=col, ax=ax)
+    ax.set_title(f'{col} Distribution')
+plt.tight_layout()
+plt.savefig('outputs/figures/eda/outlier_boxplots.png')
+```
+
+**5.2 Categorical Feature Analysis**
+
+print("=== CATEGORICAL FEATURES ===\n")
+
+categorical_cols = df_train_full.select_dtypes(include='object').columns
+
+for col in categorical_cols:
+    print(f"\n{col}:")
+    print(f"  Unique values: {df_train_full[col].nunique()}")
+    print(f"  Top values:\n{df_train_full[col].value_counts().head()}")
+    print(f"  Missing: {df_train_full[col].isnull().sum()}")
+
+**5.3 Business Rules & Domain Constraints Analysis**
+
+**Purpose:** Validate that data aligns with business logic (e.g., age ranges, employment validity)
+**Applied to:** train_full only (to inform acceptable ranges)
+
+---
+
+#### **Section 6: Document Column-by-Column Strategy & Save Configuration**
+
+
+**6.1 Create Comprehensive Strategy Table**
 
 Create detailed strategy table:
 
@@ -243,7 +286,38 @@ Create detailed strategy table:
 | monthly_balance | X% | **IMPUTE with median** | Financial snapshot |
 | Credit_Score | 0% | **TARGET** | No missing values expected |
 
-**4.5 Save Column Drop List**
+**6.2 Define and Save Acceptable Ranges** ⭐ **FROM train_full**
+```python
+# Calculate percentiles from train_full for capping
+cleaning_config = {
+    'age_min': max(18, train['age'].quantile(0.01)),
+    'age_max': min(80, train['age'].quantile(0.99)),
+
+    'num_bank_accounts_max': train['num_bank_accounts'].quantile(0.99),
+    'num_credit_card_max': train['num_credit_card'].quantile(0.99),
+
+    'interest_rate_min': 0,
+    'interest_rate_max': train['interest_rate'].quantile(0.99),
+    
+    'num_of_loan_max': train['num_of_loan'].quantile(0.99),
+    'delay_from_due_date_max': train['delay_from_due_date'].quantile(0.99),
+    'num_of_delayed_payment_max': train['num_of_delayed_payment'].quantile(0.99),
+    
+    'annual_income_min': train['annual_income'].quantile(0.01),
+    'annual_income_max': train['annual_income'].quantile(0.99)
+}
+
+
+
+# Save cleaning configuration
+with open('data/interim/cleaning_config.json', 'w') as f:
+    json.dump(cleaning_config, f, indent=4)
+
+print("✅ Cleaning configuration saved (calculated from train_full only)")
+```
+
+**6.3 Save Column Drop List**
+
 ```python
 # Columns to drop (decided from train_full analysis)
 columns_to_drop = ['name', 'ssn']
@@ -254,7 +328,7 @@ with open('data/interim/columns_to_drop.json', 'w') as f:
     json.dump(columns_to_drop, f)
 ```
 
-**4.6 Calculate and Save Imputation Statistics** ⭐ **CRITICAL FOR CONSISTENCY**
+**6.4 Calculate and Save Imputation Statistics** ⭐ **CRITICAL FOR CONSISTENCY**
 ```python
 # Calculate imputation values from train_full ONLY
 imputation_stats = {
@@ -275,7 +349,7 @@ imputation_stats = {
     'total_emi_per_month': train['total_emi_per_month'].median(),
     'amount_invested_monthly': train['amount_invested_monthly'].median(),
     'monthly_balance': train['monthly_balance'].median(),
-    
+
     # Categorical features - use mode or default
     'month': train['month'].mode()[0],
     'occupation': 'Unknown',
@@ -292,58 +366,11 @@ with open('data/interim/imputation_stats.json', 'w') as f:
 print("✅ Imputation statistics saved (calculated from train_full only)")
 ```
 
----
 
-#### **Section 5: Outlier Detection & Treatment** (on train_full ONLY)
-
-**5.1 Identify Outliers Using Boxplots**
-```python
-# Numerical columns for outlier analysis
-numerical_cols = ['age', 'num_bank_accounts', 'num_credit_card', 
-                  'interest_rate', 'num_of_loan', 'delay_from_due_date',
-                  'num_of_delayed_payment', 'annual_income']
-
-# Create boxplots
-fig, axes = plt.subplots(2, 4, figsize=(20, 10))
-for idx, col in enumerate(numerical_cols):
-    ax = axes[idx // 4, idx % 4]
-    train.boxplot(column=col, ax=ax)
-    ax.set_title(f'{col} Distribution')
-plt.tight_layout()
-plt.savefig('outputs/figures/eda/outlier_boxplots.png')
-```
-
-**5.2 Define and Save Acceptable Ranges** ⭐ **FROM train_full**
-```python
-# Calculate percentiles from train_full for capping
-cleaning_config = {
-    'age_min': max(18, train['age'].quantile(0.01)),
-    'age_max': min(80, train['age'].quantile(0.99)),
-    
-    'num_bank_accounts_max': train['num_bank_accounts'].quantile(0.99),
-    'num_credit_card_max': train['num_credit_card'].quantile(0.99),
-    
-    'interest_rate_min': 0,
-    'interest_rate_max': train['interest_rate'].quantile(0.99),
-    
-    'num_of_loan_max': train['num_of_loan'].quantile(0.99),
-    'delay_from_due_date_max': train['delay_from_due_date'].quantile(0.99),
-    'num_of_delayed_payment_max': train['num_of_delayed_payment'].quantile(0.99),
-    
-    'annual_income_min': train['annual_income'].quantile(0.01),
-    'annual_income_max': train['annual_income'].quantile(0.99)
-}
-
-# Save cleaning configuration
-with open('data/interim/cleaning_config.json', 'w') as f:
-    json.dump(cleaning_config, f, indent=4)
-
-print("✅ Cleaning configuration saved (calculated from train_full only)")
-```
 
 ---
 
-#### **Section 6: Data Consistency Checks** (on train_full ONLY)
+#### **Section 7: Data Consistency Checks** (on train_full ONLY)
 1. ✅ Validate annual_income vs monthly_inhand_salary relationship
 2. ✅ Check if monthly_inhand_salary * 12 ≈ annual_income (±20% tolerance)
 3. ✅ Flag inconsistent records for review
@@ -352,7 +379,7 @@ print("✅ Cleaning configuration saved (calculated from train_full only)")
 
 ---
 
-#### **Section 7: Duplicate Handling** (on train_full ONLY)
+#### **Section 8: Duplicate Handling** (on train_full ONLY)
 ```python
 # Check for duplicates in train_full
 duplicates = train.duplicated().sum()
@@ -369,7 +396,7 @@ print(f"Rows removed: {len(train) - len(train_dedup)}")
 
 ---
 
-#### **Section 8: Target Variable Analysis** (on train_full ONLY)
+#### **Section 9: Target Variable Analysis** (on train_full ONLY)
 ```python
 # Target distribution in train_full
 target_counts = train['Credit_Score'].value_counts()
@@ -391,12 +418,7 @@ plt.savefig('outputs/figures/eda/target_distribution.png')
 
 ---
 
-#### **Section 9-10: Exploratory Data Analysis** (on train_full ONLY)
-Continue with standard EDA procedures on train_full dataset
-
----
-
-#### **Section 11: Save Configuration & Insights**
+#### **Section 10: Save Configuration & Insights**
 ```python
 # Summary of what was saved:
 print("="*60)
