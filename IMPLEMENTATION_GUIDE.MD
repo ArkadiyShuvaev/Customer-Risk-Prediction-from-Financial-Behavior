@@ -307,8 +307,6 @@ cleaning_config = {
     'annual_income_max': train['annual_income'].quantile(0.99)
 }
 
-
-
 # Save cleaning configuration
 with open('data/interim/cleaning_config.json', 'w') as f:
     json.dump(cleaning_config, f, indent=4)
@@ -534,7 +532,12 @@ print("✅ Outlier capping applied to both datasets using train_full ranges")
 
 ---
 
-#### **Section 5: Save Cleaned Data**
+#### **Section 5: Apply Transform & One‑Hot Encoding**
+
+
+---
+
+#### **Section 6: Save Cleaned Data**
 ```python
 # Save cleaned datasets
 train_full_capped.to_csv('data/interim/train_full_cleaned.csv', index=False)
@@ -547,7 +550,7 @@ print(f"   - data/interim/test_holdout_cleaned.csv")
 
 ---
 
-#### **Section 6: Feature Engineering on train_full** ⭐ **FIT ON TRAIN_FULL**
+#### **Section 7: Feature Engineering on train_full** ⭐ **FIT ON TRAIN_FULL**
 ```python
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 import joblib
@@ -595,7 +598,7 @@ print("✅ Transformers saved (scaler, encoders)")
 
 ---
 
-#### **Section 7: Feature Engineering on test_holdout** ⭐ **TRANSFORM USING TRAIN_FULL TRANSFORMERS**
+#### **Section 8: Feature Engineering on test_holdout** ⭐ **TRANSFORM USING TRAIN_FULL TRANSFORMERS**
 ```python
 # Load cleaned test_holdout
 test = pd.read_csv('data/interim/test_holdout_cleaned.csv')

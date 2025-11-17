@@ -4,6 +4,6 @@
     "id",
     "ssn",
     "name",
-    "customer_id"
+    "month"
   ]
 }
