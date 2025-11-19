@@ -1,0 +1,28 @@
+{
+    "categorical_columns": [
+        "occupation",
+        "type_of_loan",
+        "credit_mix",
+        "payment_behaviour",
+        "payment_of_min_amount"
+    ],
+    "categorical_impute_values": {
+        "occupation": "Unknown",
+        "type_of_loan": "No_Loan",
+        "credit_mix": "Unknown",
+        "payment_behaviour": "Unknown"
+    },
+    "numerical_clipping_values": {
+        "age_min": 18,
+        "age_max": 80,
+        "num_bank_accounts_max": 512.0200000000004,
+        "num_credit_card_max": 863.1100000000024,
+        "interest_rate_min": 0,
+        "interest_rate_max": 2711.130000000003,
+        "num_of_loan_max": 9.0,
+        "delay_from_due_date_max": 61.0,
+        "num_of_delayed_payment_max": 27.0,
+        "annual_income_min": 7546.6382,
+        "annual_income_max": 179079.43480000002
+    }
+}

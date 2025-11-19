@@ -931,30 +931,30 @@ test_holdout = test_holdout.drop(columns_to_drop, axis=1)
                   │    Load Configuration Files       │
                   │◄───────────────────────────────┐  │
                   │                                │  │
-                  ├─► columns_to_drop.json        │  │
-                  ├─► imputation_stats.json       │  │
-                  └─► cleaning_config.json        │  │
+                  ├─► columns_to_drop.json         │  │
+                  ├─► imputation_stats.json        │  │
+                  └─► cleaning_config.json         │  │
                   │                                │  │
-                  ├─► [Drop Columns] ─────────────┼──┤
+                  ├─► [Drop Columns] ──────────────┼──┤
                   │                                │  │
-                  ├─► [Apply Imputation] ─────────┼──┤
-                  │    (using train_full stats)   │  │
+                  ├─► [Apply Imputation] ──────────┼──┤
+                  │    (using train_full stats)    │  │
                   │                                │  │
-                  ├─► [Apply Outlier Capping] ────┼──┤
-                  │    (using train_full ranges)  │  │
+                  ├─► [Apply Outlier Capping] ─────┼──┤
+                  │    (using train_full ranges)   │  │
                   ▼                                ▼  │
     train_full_cleaned.csv          test_holdout_cleaned.csv
                   │                                   │
-                  ├─► [Create Features] ─────────────┤
+                  ├─► [Create Features] ──────────────┤
                   │                                   │
-                  ├─► [Fit Transformers] ────────────┐
-                  │   • StandardScaler               │
-                  │   • LabelEncoders                │
+                  ├─► [Fit Transformers] ─────────────┐
+                  │   • StandardScaler                │
+                  │   • LabelEncoders                 │
                   │                                   │
-                  ├─► feature_scaler.pkl             │
-                  ├─► label_encoders.pkl             │
+                  ├─► feature_scaler.pkl              │
+                  ├─► label_encoders.pkl              │
                   │                                   │
-                  ├─► [Transform Train] ─────────────┤
+                  ├─► [Transform Train] ──────────────┤
                   │                                   │
                   │   [Transform Test] ◄──────────────┤
                   │   (using fitted transformers)     │
@@ -1014,7 +1014,7 @@ df = pd.read_csv('data/raw/credit_score_truncated_raw.csv')
 
 # Perform stratified split
 train_full, test_holdout = train_test_split(
-    df, 
+    df,
     test_size=0.20,
     stratify=df['Credit_Score'],
     random_state=42
